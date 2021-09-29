@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<style>
+.grid-container {
+  display: grid;
+  grid-gap: 00px 0px;
+  grid-template-columns: auto auto;
+  background-color: #2196F3;
+  padding: 10px;
+}
+
+.grid-item {
+  background-color: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.8);
+  padding: 20px;
+  font-size: 30px;
+  text-align: center;
+}
+</style>
+
+
+
+ <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+   integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+   crossorigin=""/>
+
+
+<!-- the below line loads a css stylesheet in jinja: requires .css file to be in (main app dir)/static/file_name.css -->
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='style.css') }}">
+
+
+</head>
+<body>
+
+  {% include 'includes/_navbar.html' %} 
+
+<h1>The grid-gap Property:</h1>
+
+
+
+
+
+<!-- Dropdown with links to things, using CSS formatting and JS to hide and show options on click -->
+<div class="dropdown">
+  <button onclick="myFunction()" class="dropbtn">JS dropdown menu</button>
+  <div id="myDropdown" class="dropdown-content">
+    <a href="http://127.0.0.1:5000/thing">Link to thing</a>
+    <a href="http://127.0.0.1:5000/folium_map">map!</a>
+    <a href="#">Link 3</a>
+  </div>
+</div>
+
+
+
+
+<!-- selector with 'Go' button which redirects URL, which could vary according to the chosen value --> 
+<form class="form-inline" method="POST" action="{{ url_for('return_form_result') }}">
+  <div class="form-group">
+    <div class="input-group">
+        <span class="input-group-addon">Please select</span>
+            <select id="colour_of_choice" name="comp_select" class="selectpicker form-control">
+              {% for colour in colours %}
+              <option value="{{ colour }}">{{ colour }}</option>
+              {% endfor %}
+            </select>
+    </div>
+    <button type="submit" class="btn btn-default">Go</button>
+  </div>
+</form>
+
+
+
+
+<input type="range" min="1" max="150" id="nRadius">    <!-- slider input --> 
+
+
+
+
+
+
+<div class="grid-container">
+  <div id='changed_box' class="grid-item">1</div>
+  <div id='plotly_box' style="padding:0px; width:35pc; height:35pc;" class="grid-item"></div>
+  <div id='plotly_in_js_box' style="padding:0px; width:35pc; height:35pc;" class="grid-item"></div>  
+
+  <!-- note svg not div for d3 container --> 
+  <svg id = 'd3_circle_box' style="padding:0px; width:35pc; height:35pc; border:solid 1px black;" ></svg>
+
+  <!-- note canvas not svg or div for Chart.js --> 
+  <canvas id = 'chartsjs_in_js_box' width="500px" height="400px"></canvas>
+  <div id='mapid' style="height: 300px;" class="grid-item"></div>
+
+
+
+
+
+
+<p>Use the <em>grid-gap</em> property to adjust the space between the columns <em>and</em> the rows.</p>
+
+
+</body>
+
+</html>
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-2.4.2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+ <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+   integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+   crossorigin=""></script>
+
+
+<script>
+
+
+/// set new html in a grid box
+document.getElementById('changed_box').innerHTML = '<p>new html code here!</p>';
+
+
+
+
+/// show plotly obj sent over from flask
+var graphs = {{graphJSON | safe}}; 
+Plotly.newPlot('plotly_box',graphs,{});
+
+
+
+
+/// make plotly chart in JS directly
+TESTER = document.getElementById('plotly_in_js_box');
+Plotly.newPlot( TESTER, [{
+  x: [1, 2, 3, 4, 5],
+  y: [1, 2, 4, 8, 16] }], 
+  {margin: { t: 0 } } 
+);
+
+
+
+
+
+
+// make circle in d3 which updates in response to slider
+var circle_radius = {{ circle_radius | safe }};  // load circle_radius from flask
+//var circle_box = d3.select("#d3_circle_box")
+d3.select("#d3_circle_box")
+  .append('circle')
+  .attr('cx', 100)
+  .attr('cy', 100)
+  .attr('r', circle_radius)
+  .attr('stroke', 'red')
+  .attr('fill', 'red')
+            /// window.location.href returns URL of current page (might not work if using redirected URL: not sure)
+  .on("click", function() { window.open(window.location.href + '/thing'); })  // opens link in new window
+  .attr('id', 'megacircle');
+
+
+/// to update circle radius on change in slider
+d3.select("#nRadius").on("input", function() { /// call 'update' function on change of nRadius input slider
+  update_radius(+this.value);
+});
+
+function update_radius(nRadius) {                 
+  d3.select("#nRadius-value").text(nRadius);      // change text of slider
+  d3.select('#megacircle').attr("r", nRadius)   // changes radius
+}
+
+
+/// to update circle fill colour on dropdown
+d3.select("#colour_of_choice").on("input", function() { /// call 'update' function on change of nRadius input slider
+   update_fill_colour(this.value);
+});
+
+function update_fill_colour(colour_of_choice) {    
+  //d3.select("#colour_of_choice-value").text(colour_of_choice);     
+  d3.select('#megacircle').attr("fill", colour_of_choice)   // changes fill col
+}
+
+/////// end of reactive circle code
+
+
+
+
+
+/// selecting canvas for chart.js and setting width/height (not sure one can do this as a % when declaring 
+/// chartsjs_in_js_box)
+var ctx = document.getElementById('chartsjs_in_js_box').getContext('2d'); // creates 2d rendering context
+height = window.innerHeight * 0.35;
+width = window.innerWidth * 0.35;
+ctx.canvas.parentNode.style.width = `${width}px`;   // string literals use backtick
+ctx.canvas.parentNode.style.height = `${height}px`;
+
+
+/// Charts.js box: need 'data' dict to feed into 'config' dict, to feed into Chart()
+const labels = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+];
+const data = {
+  labels: labels,
+  datasets: [{
+    label: 'My First dataset',
+    backgroundColor: 'rgb(255, 99, 132)',
+    borderColor: 'rgb(255, 99, 132)',
+    data: [0, 10, 5, 2, 20, 30, 45],
+  }]
+};
+const config = {
+  type: 'line',
+  data: data,
+  options: {}
+};
+//var myChart = new 
+new Chart(
+    ctx,          // this assigns the created plot to a context (a canvas in this case)
+    config        // all chart params and data
+  );
+// end of chart.js plot
+
+// chart.js can take data in multiple structures (eg arrays or key/value pairs), :
+// https://www.chartjs.org/docs/next/general/data-structures.html 
+
+/// if you wanted to filter a data structure based on dropdown, etc: 
+/// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter
+
+
+
+
+
+
+
+/////     NEED mapbox access key for this to work
+/// Map!  
+// Borrowed from: https://leafletjs.com/examples/quick-start/
+var mymap = L.map('mapid').setView([51.505, -0.09], 13); // initialise map inc coords and zoom level
+
+// add tilelayer to map
+L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+    maxZoom: 18,
+    id: 'mapbox/streets-v11',
+    tileSize: 512,
+    zoomOffset: -1,
+    accessToken: 'your.mapbox.access.token'
+}).addTo(mymap);
+
+// add marker and circle
+var marker = L.marker([51.5, -0.09]).addTo(mymap);
+var circle = L.circle([51.508, -0.11], {
+    color: 'red',
+    fillColor: '#f03',
+    fillOpacity: 0.5,
+    radius: 500
+}).addTo(mymap);
+
+// interesting example of canvas of kittens once moves over in the same way as leaflet tiles: but 
+// with cat pictures instead of a world map
+
+
+
+
+
+
+
+// shows dropdown menu on click
+function myFunction() {
+    document.getElementById("myDropdown").classList.toggle("show");
+}
+
+// hide dropdown menu on click elsewhere
+window.onclick = function(event) {  
+  if (!event.target.matches('.dropbtn')) {    
+    var dropdowns = document.getElementsByClassName("dropdown-content");    
+  var i;    
+  for (i = 0; i < dropdowns.length; i++) {      
+    var openDropdown = dropdowns[i];      
+    if (openDropdown.classList.contains('show')) {        
+      openDropdown.classList.remove('show');      
+    }    
+    }  
+  }
+}
+
+
+
+</script>

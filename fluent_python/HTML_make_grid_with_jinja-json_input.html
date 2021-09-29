@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.grid-container {
+  display: grid;
+  grid-gap: 00px 0px;
+  grid-template-columns: auto auto;
+  background-color: #2196F3;
+  padding: 10px;
+}
+
+.grid-item {
+  background-color: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.8);
+  padding: 20px;
+  font-size: 30px;
+  text-align: center;
+}
+</style>
+</head>
+<body>
+
+<h1>The grid-gap Property:</h1>
+
+<div class="grid-container">
+  <div id='changed_box' class="grid-item">1</div>
+  <div style="padding:0px; height:500px;" id='plotly_box' class="grid-item"></div>
+  <div class="grid-item">3</div>  
+  <div class="grid-item">4</div>
+  <div class="grid-item">5</div>
+  
+</div>
+
+<p>Use the <em>grid-gap</em> property to adjust the space between the columns <em>and</em> the rows.</p>
+
+
+</body>
+
+</html>
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+
+
+<script>
+  /// set new html in a grid box
+document.getElementById('changed_box').innerHTML = '<p>new html code here!</p>';
+
+var graphs = {{graphJSON | safe}};   // graphJSON is from jinja as part of a flask app
+Plotly.newPlot('plotly_box',graphs,{});
+
+
+</script>
