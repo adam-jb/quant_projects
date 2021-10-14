@@ -1,0 +1,41 @@
+
+# based on https://spark.apache.org/docs/latest/sql-data-sources-json.html
+
+
+from pyspark.sql import SparkSession
+import os
+
+
+
+print(os.listdir())
+path = 'example.json'
+
+
+# in prep to read 
+spark = SparkSession \
+    .builder \
+    .appName("Python Spark SQL basic example") \
+    .config("spark.some.config.option", 1) \
+    .getOrCreate()
+    
+    
+    
+print(spark.version)
+print(spark.appName)
+print(spark.master)
+print(spark)
+
+
+peopleDF = spark.read.json(path)
+peopleDF.printSchema()
+
+
+
+peopleDF.createOrReplaceTempView("people")
+
+
+teenagerNamesDF = spark.sql("SELECT name FROM people")
+teenagerNamesDF.show()
+
+spark.stop()
+
