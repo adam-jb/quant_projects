@@ -44,7 +44,7 @@ previous_day = start_day - datetime.timedelta(days=1)
 
 
 print('starting')
-time.sleep(751)  # waiting 15 mins to ensure all tweets captured for that day
+#time.sleep(751)  # waiting 15 mins to ensure all tweets captured for that day
 
 
 # looping to get tweets over a year
@@ -60,15 +60,23 @@ for i in range(355):
 	    created_at = tweet.created_at
 	    print(text)
 
+	    # store image URLs
+	    media_urls = []
+	    if 'media' in tweet.entities:
+	    	for media in tweet.extended_entities['media']:
+	    		media_urls.append(media['media_url'])
+	    		print(media['media_url'])
+
+
 	    # storing data
-	    line = {'text' : text, 'favourite_count' : favourite_count, 'retweet_count' : retweet_count, 'created_at' : created_at}
+	    line = {'text' : text, 'favourite_count' : favourite_count, 'retweet_count' : retweet_count, 'created_at' : created_at, 'media_urls': media_urls}
 
 	    output.append(line)
 
 	output = pd.DataFrame(output)
 
 	print('saving output for ' + str(previous_day) + ' with shape of ' + str(output.shape))
-	output.to_parquet('/Users/apple/Desktop/quant_projects/social networks/top_5_airport_files/a' + str(previous_day) + '.parquet')
+	output.to_csv('/Users/apple/Desktop/quant_projects/social networks/top_5_airport_files/a' + str(previous_day) + '.csv')
 
 	# updating query dates
 	start_day = start_day - datetime.timedelta(days=1)
