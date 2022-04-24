@@ -1,0 +1,82 @@
+More on blueprint inc how to integrate all blueprints into one app: http://exploreflask.com/en/latest/blueprints.html 
+
+Blueprint = collection of files making up a single page, which can be part of a larger flask application
+
+Blueprints tend to be stored in a ‘views’ folder, where each is a py file, eg:
+yourapp/
+    __init__.py
+    static/
+    templates/
+        home/
+        control_panel/
+        admin/
+    views/
+        __init__.py
+        home.py
+        control_panel.py
+        admin.py
+    models.py
+
+Alternatively you might make a ‘divisional’ structure, where each view has its own templates and static folders (this makes more sense if the pages don’t share such files):
+
+yourapp/
+    __init__.py
+    admin/
+        __init__.py
+        views.py
+        static/
+        templates/
+    home/
+        __init__.py
+        views.py
+        static/
+        templates/
+    control_panel/
+        __init__.py
+        views.py
+        static/
+        templates/
+    models.py
+
+
+A ‘functional’ structure where some pages call different files: as you don’t want to store duplicates of the html files, these will often extend a master template”
+facebook_website/
+    __init__.py
+    templates/
+        layout.html
+        home/
+            layout.html
+            index.html
+            about.html
+            signup.html
+            login.html
+        dashboard/
+            layout.html
+            news_feed.html
+            welcome.html
+            find_friends.html
+        profile/
+            layout.html
+            timeline.html
+            about.html
+            photos.html
+            friends.html
+            edit.html
+        settings/
+            layout.html
+            privacy.html
+            security.html
+            general.html
+    views/
+        __init__.py
+        home.py
+        dashboard.py
+        profile.py
+        settings.py
+    static/
+        style.css
+        logo.png
+    models.py
+
+
+
